@@ -18,7 +18,21 @@ spec:
     ingress:
       appHost: plane.cloud.clearclean.local
       ingressClass: traefik
-      tls:
-        secretName: plane-tls
     env:
       storageClass: local-path
+  postRenderers:
+  - kustomize:
+      patches:
+      - target:
+          kind: Ingress
+          name: plane-ingress
+        patch: |
+          - op: add
+            path: /metadata/annotations/cert-manager.io~1cluster-issuer
+            value: clearclean-ca
+          - op: add
+            path: /spec/tls
+            value:
+            - hosts:
+              - plane.cloud.clearclean.local
+              secretName: plane-tls
