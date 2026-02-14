@@ -20,6 +20,14 @@ spec:
       ingressClass: traefik
     env:
       storageClass: local-path
+    worker:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: "1"
+          memory: 2Gi
   postRenderers:
   - kustomize:
       patches:
