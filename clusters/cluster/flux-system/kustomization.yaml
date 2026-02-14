@@ -7,3 +7,4 @@ resources:
 - espocrm-sync.yaml
 - cert-manager-sync.yaml
 - cert-manager-config-sync.yaml
+- plane-sync.yaml
