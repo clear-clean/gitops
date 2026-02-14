@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clearclean-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: ClearClean CA
+  secretName: clearclean-ca-tls
+  duration: 87600h # 10 years
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer

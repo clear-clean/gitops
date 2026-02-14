@@ -30,7 +30,7 @@ spec:
             - name: ESPOCRM_ADMIN_PASSWORD
               value: "password"
             - name: ESPOCRM_SITE_URL
-              value: "http://localhost:8080"
+              value: "https://espocrm.cloud.clearclean.local"
           ports:
             - containerPort: 80
           volumeMounts:

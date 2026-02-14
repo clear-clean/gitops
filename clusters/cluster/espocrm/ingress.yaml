@@ -3,7 +3,13 @@ kind: Ingress
 metadata:
   name: espocrm
   namespace: espocrm
+  annotations:
+    cert-manager.io/cluster-issuer: "clearclean-ca"
 spec:
+  tls:
+  - hosts:
+    - espocrm.cloud.clearclean.local
+    secretName: espocrm-tls
   rules:
   - host: espocrm.cloud.clearclean.local
     http:
