@@ -38,3 +38,10 @@ spec:
             - hosts:
               - plane.cloud.clearclean.local
               secretName: plane-tls
+      - target:
+          kind: ConfigMap
+          name: plane-app-vars
+        patch: |
+          - op: replace
+            path: /data/WEB_URL
+            value: https://plane.cloud.clearclean.local
