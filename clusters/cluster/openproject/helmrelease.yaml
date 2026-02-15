@@ -5,7 +5,7 @@ metadata:
   namespace: openproject
 spec:
   interval: 30m0s
-  timeout: 10m0s
+  timeout: 15m0s
   chart:
     spec:
       chart: openproject
@@ -20,6 +20,8 @@ spec:
       https: true
       host: openproject.cloud.clearclean.local
       seed_locale: de
+      useTmpVolumes: true
+      tmpVolumesStorageClassName: local-path
     ingress:
       enabled: true
       ingressClassName: traefik
