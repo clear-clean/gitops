@@ -20,17 +20,18 @@ spec:
       https: true
       host: openproject.cloud.clearclean.local
       seed_locale: de
-    extraVolumes:
-      - name: tmp-safe
-        emptyDir: {}
-    extraVolumeMounts:
-      - name: tmp-safe
-        mountPath: /tmp-safe
-    extraEnvVars:
-      - name: TMPDIR
-        value: /tmp-safe
-      - name: HOME
-        value: /tmp-safe
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - "ALL"
+      seccompProfile:
+        type: "RuntimeDefault"
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
     ingress:
       enabled: true
       ingressClassName: traefik
