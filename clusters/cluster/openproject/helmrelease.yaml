@@ -14,13 +14,23 @@ spec:
         name: openproject
         namespace: flux-system
   values:
-    develop: true
     image:
       tag: "17"
     openproject:
       https: true
       host: openproject.cloud.clearclean.local
       seed_locale: de
+    extraVolumes:
+      - name: tmp-safe
+        emptyDir: {}
+    extraVolumeMounts:
+      - name: tmp-safe
+        mountPath: /tmp-safe
+    extraEnvVars:
+      - name: TMPDIR
+        value: /tmp-safe
+      - name: HOME
+        value: /tmp-safe
     ingress:
       enabled: true
       ingressClassName: traefik
