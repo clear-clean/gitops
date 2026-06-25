@@ -9,3 +9,4 @@ resources:
 - cert-manager-config-sync.yaml
 - plane-sync.yaml
 - openproject-sync.yaml
+- kontaktradar-sync.yaml

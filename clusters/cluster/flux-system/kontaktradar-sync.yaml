@@ -1,0 +1,40 @@
+# Kontaktradar wird aus einem SEPARATEN Anwendungs-Repo deployt (Manifeste dort
+# unter ./k8s). Die CI dieses Repos pflegt den Image-Tag automatisch
+# (k8s/kustomization.yaml). Flux zieht diesen Stand und reconciled ihn.
+#
+# Einmalig noetig: Deploy-Key fuer das kontaktradar-Repo als Secret anlegen
+# (Lesezugriff genuegt), damit Flux ueber SSH klonen kann:
+#
+#   flux create secret git kontaktradar-auth \
+#     --url=ssh://git@github.com/clear-clean/kontaktradar \
+#     --namespace=flux-system
+#   # ausgegebenen Public Key im kontaktradar-Repo als Deploy-Key hinterlegen
+#
+# Ist das kontaktradar-Repo oeffentlich: secretRef entfernen und ggf.
+# url auf https://github.com/clear-clean/kontaktradar setzen.
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: kontaktradar
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: kontaktradar-auth
+  url: ssh://git@github.com/clear-clean/kontaktradar
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kontaktradar
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./k8s
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: kontaktradar
