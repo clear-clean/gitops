@@ -1,0 +1,52 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  interval: 30m0s
+  chart:
+    spec:
+      chart: traefik
+      version: "43.x"
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+  values:
+    # Single-Node-Cluster: Traefik bindet 80/443 direkt auf node1 (192.168.1.92),
+    # kein LoadBalancer. DNS: *.dev.cloud.clearclean.local -> 192.168.1.92.
+    service:
+      spec:
+        type: ClusterIP
+    ports:
+      web:
+        hostPort: 80
+      websecure:
+        hostPort: 443
+    # Host-Ports auf einem Node: alter Pod muss die Ports zuerst freigeben,
+    # sonst bleibt jedes Upgrade haengen.
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 0
+    providers:
+      # Gateway API ist der Standardweg auf dev; der Ingress-Provider bleibt
+      # (Chart-Default) als Rueckfall fuer Charts ohne HTTPRoute aktiv.
+      kubernetesGateway:
+        enabled: true
+        # Ohne LoadBalancer-Service kennt das Gateway seine Adresse nicht selbst.
+        statusAddress:
+          ip: 192.168.1.92
+          service:
+            enabled: false
+    gateway:
+      listeners:
+        web:
+          port: 8000
+          protocol: HTTP
+          hostname: "*.dev.cloud.clearclean.local"
+          # Apps haengen ihre HTTPRoute aus dem eigenen Namespace an.
+          namespacePolicy:
+            from: All
