@@ -1,0 +1,12 @@
+# Plugins fuer das DokuWiki auf dev. Eine Zeile pro Plugin:
+#
+#   <name> <url> <sha256>
+#
+# name    Verzeichnis unter lib/plugins/ (vom Plugin vorgegeben)
+# url     tar.gz eines festen Stands, bei GitHub am besten .../archive/<commit>.tar.gz
+# sha256  Pruefsumme des Archivs:  curl -fsSL <url> | sha256sum
+#
+# Was hier nicht (mehr) steht, wird beim naechsten Pod-Start entfernt.
+
+# MCP-Server, Release 2026-08-04 (https://www.dokuwiki.org/plugin:mcp)
+mcp https://github.com/cosmocode/dokuwiki-plugin-mcp/archive/c44faefa170c63435ccd19c3a25e84e2e2a24c53.tar.gz 96bdd5629c77772dc711a88b572e09d18bad4c03ccc6a020de9ada122e15cc6e

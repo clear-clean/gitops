@@ -7,3 +7,4 @@ resources:
 - cert-manager-sync.yaml
 - cert-manager-config-sync.yaml
 - traefik-sync.yaml
+- dokuwiki-sync.yaml

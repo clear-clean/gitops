@@ -1,0 +1,13 @@
+# Alle veraenderlichen Daten: Seiten, Medien, Benutzer, ACLs, Plugins.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dokuwiki
+  namespace: dokuwiki
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi

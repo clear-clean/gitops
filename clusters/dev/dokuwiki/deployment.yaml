@@ -1,0 +1,95 @@
+# Offizielles DokuWiki-Image (https://hub.docker.com/r/dokuwiki/dokuwiki).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dokuwiki
+  namespace: dokuwiki
+  labels:
+    app.kubernetes.io/name: dokuwiki
+spec:
+  replicas: 1
+  # RWO-Volume auf einem Node: alten Pod erst beenden, dann neuen starten.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dokuwiki
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dokuwiki
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+      initContainers:
+      # Installiert die Plugins aus plugins/plugins.txt ins Volume.
+      - name: install-plugins
+        image: dokuwiki/dokuwiki:2026-07-14c
+        command: ["/bin/bash", "/gitops/install-plugins.sh"]
+        volumeMounts:
+        - name: storage
+          mountPath: /storage
+        - name: plugins
+          mountPath: /gitops
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      containers:
+      - name: dokuwiki
+        image: dokuwiki/dokuwiki:2026-07-14c
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: PHP_TIMEZONE
+          value: Europe/Berlin
+        volumeMounts:
+        - name: storage
+          mountPath: /storage
+        # Konfiguration aus dem Repo, schreibgeschuetzt ueber das Volume gelegt
+        - name: config
+          mountPath: /storage/conf/local.protected.php
+          subPath: local.protected.php
+          readOnly: true
+        - name: config
+          mountPath: /storage/conf/plugins.protected.php
+          subPath: plugins.protected.php
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health.php
+            port: http
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health.php
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: dokuwiki
+      - name: config
+        configMap:
+          name: dokuwiki-config
+      - name: plugins
+        configMap:
+          name: dokuwiki-plugins
