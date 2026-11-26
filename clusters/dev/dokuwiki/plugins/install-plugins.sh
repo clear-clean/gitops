@@ -6,7 +6,13 @@ set -euo pipefail
 
 LIST="${PLUGIN_LIST:-/gitops/plugins.txt}"
 DEST="${PLUGIN_DIR:-/storage/lib/plugins}"
+CONF="${CONF_DIR:-/storage/conf}"
 MARKER=".gitops-sha256"
+
+# conf/ muss existieren und dem Wiki-Benutzer gehoeren, BEVOR Kubernetes die
+# Dateien aus der ConfigMap dort einhaengt. Sonst legt Kubernetes das
+# Verzeichnis als root an und das Wiki kann nicht hineinschreiben.
+mkdir -p "$CONF"
 
 mkdir -p "$DEST"
 tmp="$(mktemp -d)"
