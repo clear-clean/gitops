@@ -7,7 +7,7 @@ spec:
   dependsOn:
   - name: cert-manager
   interval: 10m0s
-  path: ./clusters/cluster/cert-manager-config
+  path: ./clusters/prod/cert-manager-config
   prune: true
   sourceRef:
     kind: GitRepository
