@@ -1,8 +1,0 @@
-# Uebergangs-Stub fuer den Umzug clusters/cluster -> clusters/prod.
-# Die Root-Kustomization im Cluster liest noch einmal diesen Pfad, wendet dabei
-# die gotk-sync.yaml mit dem neuen Pfad an und schaltet sich selbst um.
-# Wird im Folge-Commit entfernt.
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- ../prod
