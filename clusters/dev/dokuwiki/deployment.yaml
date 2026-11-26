@@ -25,15 +25,20 @@ spec:
         fsGroup: 1000
         runAsNonRoot: true
       initContainers:
-      # Installiert die Plugins aus plugins/plugins.txt ins Volume.
-      - name: install-plugins
+      # Bereitet das Volume vor: Ersteinrichtung (statt install.php) und
+      # Plugins aus init/plugins.txt. Siehe init/init-storage.sh.
+      - name: init-storage
         image: dokuwiki/dokuwiki:2026-07-14c
-        command: ["/bin/bash", "/gitops/install-plugins.sh"]
+        command: ["/bin/bash", "/gitops/init-storage.sh"]
         volumeMounts:
         - name: storage
           mountPath: /storage
-        - name: plugins
+        - name: init
           mountPath: /gitops
+          readOnly: true
+        # Passwort-Hash des Admins, nur fuer die Ersteinrichtung
+        - name: admin
+          mountPath: /admin
           readOnly: true
         securityContext:
           allowPrivilegeEscalation: false
@@ -90,6 +95,12 @@ spec:
       - name: config
         configMap:
           name: dokuwiki-config
-      - name: plugins
+      - name: init
         configMap:
-          name: dokuwiki-plugins
+          name: dokuwiki-init
+      # Von Hand angelegt, nicht im Repo:
+      #   kubectl -n dokuwiki create secret generic dokuwiki-admin \
+      #     --from-literal=password-hash='<bcrypt>' [--from-literal=email='<adresse>']
+      - name: admin
+        secret:
+          secretName: dokuwiki-admin

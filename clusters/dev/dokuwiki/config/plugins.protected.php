@@ -1,7 +1,7 @@
 <?php
 /**
  * Aus dem gitops-Repo, per ConfigMap eingehaengt.
- * Plugins werden ausschliesslich ueber plugins/plugins.txt installiert.
+ * Plugins werden ausschliesslich ueber init/plugins.txt installiert.
  */
 
 // Erweiterungsmanager aus: keine Installation ueber die Admin-Oberflaeche

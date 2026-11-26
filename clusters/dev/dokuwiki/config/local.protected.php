@@ -8,8 +8,15 @@ $conf['title']   = 'ClearClean Wiki (dev)';
 $conf['lang']    = 'de';
 $conf['baseurl'] = 'https://dokuwiki.dev.cloud.clearclean.local';
 
-// Zugriffskontrolle immer an
-$conf['useacl'] = 1;
+// Zugriffskontrolle immer an, Mitglieder der Gruppe "admin" sind Administratoren
+$conf['useacl']    = 1;
+$conf['superuser'] = '@admin';
+
+// Konten legt nur ein Administrator an, keine Selbstregistrierung
+$conf['disableactions'] = 'register';
+
+// internes Wiki: keine Inhaltslizenz anzeigen
+$conf['license'] = '';
 
 // Remote-API fuer das MCP-Plugin: nur Mitglieder der Gruppe "mcp"
 $conf['remote']     = 1;

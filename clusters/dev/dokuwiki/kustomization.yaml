@@ -14,7 +14,9 @@ configMapGenerator:
     files:
       - config/local.protected.php
       - config/plugins.protected.php
-  - name: dokuwiki-plugins
+  - name: dokuwiki-init
     files:
-      - plugins/plugins.txt
-      - plugins/install-plugins.sh
+      - init/init-storage.sh
+      - init/plugins.txt
+      - init/acl.auth.php
+      - init/users.auth.php.head
