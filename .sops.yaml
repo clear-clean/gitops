@@ -1,0 +1,11 @@
+# SOPS-Regeln fuer dieses Repo. Secrets liegen als *.sops.yaml verschluesselt
+# im Git; Flux entschluesselt sie im Cluster mit dem Secret flux-system/sops-age.
+#
+# Verschluesseln:  sops --encrypt --in-place clusters/dev/<app>/<name>.sops.yaml
+# Ansehen/aendern: sops clusters/dev/<app>/<name>.sops.yaml
+#
+# Der private age-Schluessel liegt NICHT im Repo.
+creation_rules:
+  - path_regex: ^clusters/dev/.*\.sops\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
+    age: age17nrfattm2wr6345u67n6h98zqef28j00hmhzdw0wkrsugghv835snpv3rf
