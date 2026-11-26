@@ -4,6 +4,8 @@ metadata:
   name: traefik
   namespace: flux-system
 spec:
+  dependsOn:
+  - name: gateway-api
   interval: 10m0s
   path: ./clusters/dev/traefik
   prune: true
