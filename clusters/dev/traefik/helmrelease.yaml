@@ -50,3 +50,12 @@ spec:
           # Apps haengen ihre HTTPRoute aus dem eigenen Namespace an.
           namespacePolicy:
             from: All
+        websecure:
+          port: 8443
+          protocol: HTTPS
+          hostname: "*.dev.cloud.clearclean.local"
+          namespacePolicy:
+            from: All
+          # ausgestellt von cert-manager, siehe wildcard-certificate.yaml
+          certificateRefs:
+          - name: wildcard-dev-cloud-tls

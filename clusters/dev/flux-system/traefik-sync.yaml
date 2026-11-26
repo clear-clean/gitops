@@ -6,6 +6,7 @@ metadata:
 spec:
   dependsOn:
   - name: gateway-api
+  - name: cert-manager-config
   interval: 10m0s
   path: ./clusters/dev/traefik
   prune: true

@@ -1,0 +1,16 @@
+# Eigene CA fuer den dev-Cluster (getrennt von der prod-CA "ClearClean CA").
+# Der ClusterIssuer heisst wie auf prod "clearclean-ca", damit Manifeste
+# zwischen den Clustern uebertragbar bleiben.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clearclean-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: ClearClean Dev CA
+  secretName: clearclean-ca-tls
+  duration: 87600h # 10 years
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer

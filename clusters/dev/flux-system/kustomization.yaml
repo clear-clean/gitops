@@ -4,4 +4,6 @@ resources:
 - gotk-components.yaml
 - gotk-sync.yaml
 - gateway-api-sync.yaml
+- cert-manager-sync.yaml
+- cert-manager-config-sync.yaml
 - traefik-sync.yaml

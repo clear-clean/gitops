@@ -1,0 +1,7 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: clearclean-ca
+spec:
+  ca:
+    secretName: clearclean-ca-tls

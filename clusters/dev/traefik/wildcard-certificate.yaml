@@ -1,0 +1,13 @@
+# Wildcard-Zertifikat fuer den HTTPS-Listener des Gateways.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-dev-cloud
+  namespace: traefik
+spec:
+  secretName: wildcard-dev-cloud-tls
+  dnsNames:
+  - "*.dev.cloud.clearclean.local"
+  issuerRef:
+    name: clearclean-ca
+    kind: ClusterIssuer
