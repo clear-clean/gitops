@@ -1,0 +1,28 @@
+# PostgreSQL fuer Gitea, verwaltet vom CloudNativePG-Operator
+# (clusters/dev/cnpg-operator). Der Operator erzeugt daraus:
+#   - Service  gitea-db-rw   (Schreibzugriff, Port 5432)
+#   - Secret   gitea-db-app  (username, password, dbname, ...)
+# Die Zugangsdaten stehen deshalb nirgends im Repo.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: gitea-db
+  namespace: gitea
+spec:
+  # Single-Node-Cluster: eine Instanz, keine Replikation.
+  instances: 1
+  # Fest gepinnt, damit ein Operator-Upgrade nicht nebenbei PostgreSQL anhebt.
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.7-system-trixie
+  storage:
+    size: 5Gi
+    storageClass: local-path
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
