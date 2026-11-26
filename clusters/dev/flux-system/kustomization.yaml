@@ -8,3 +8,4 @@ resources:
 - cert-manager-config-sync.yaml
 - traefik-sync.yaml
 - dokuwiki-sync.yaml
+- cnpg-operator-sync.yaml
