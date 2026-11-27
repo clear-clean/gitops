@@ -97,6 +97,10 @@ spec:
         url: http://loki.monitoring.svc.cluster.local:3100
         jsonData:
           maxLines: 1000
+          # Grafana soll keine Regeln in Loki verwalten. Loki speichert Regeln
+          # hier nur lokal und beantwortet die Ruler-Abfragen mit 400.
+          # Log-Alarme gehen weiterhin als Grafana-Alarme.
+          manageAlerts: false
       # Helm-Test-Pod, laeuft nur bei "helm test"
       testFramework:
         enabled: false
