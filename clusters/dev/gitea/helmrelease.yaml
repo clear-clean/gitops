@@ -68,6 +68,10 @@ spec:
           # Agenten greifen von aussen ueber HTTPS zu. Die in der Oberflaeche
           # angezeigte SSH-Adresse ist deshalb die cluster-interne.
           SSH_DOMAIN: gitea-ssh.gitea.svc.cluster.local
+          # Ausdruecklich false: app.ini liegt im Volume, und das Chart
+          # entfernt dort keine Werte. Eine geloeschte Zeile behielte den
+          # alten Wert (true).
+          DISABLE_SSH: false
         database:
           DB_TYPE: postgres
           HOST: gitea-db-rw.gitea.svc.cluster.local:5432
