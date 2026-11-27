@@ -62,14 +62,23 @@ spec:
         server:
           DOMAIN: gitea.dev.cloud.clearclean.local
           ROOT_URL: https://gitea.dev.cloud.clearclean.local/
-          # Git nur ueber HTTPS; kein SSH auf dev
-          DISABLE_SSH: true
+          # SSH ist nur innerhalb des Clusters erreichbar (Service gitea-ssh),
+          # es gibt keine Freigabe nach aussen. Genutzt wird es vom Otter Wiki,
+          # das sein Repository per SSH mit Gitea abgleicht. Menschen und
+          # Agenten greifen von aussen ueber HTTPS zu. Die in der Oberflaeche
+          # angezeigte SSH-Adresse ist deshalb die cluster-interne.
+          SSH_DOMAIN: gitea-ssh.gitea.svc.cluster.local
         database:
           DB_TYPE: postgres
           HOST: gitea-db-rw.gitea.svc.cluster.local:5432
         service:
           # Konten legt nur ein Administrator an
           DISABLE_REGISTRATION: true
+        webhook:
+          # Gitea ruft Webhooks an interne Adressen standardmaessig nicht auf.
+          # Freigegeben ist genau der Service des Otter Wikis, das nach einem
+          # Merge den neuen Stand abholt.
+          ALLOWED_HOST_LIST: otterwiki.otterwiki.svc.cluster.local
         # Ohne Valkey/Redis: Einstellungen fuer den Betrieb mit einem Pod
         session:
           PROVIDER: db
