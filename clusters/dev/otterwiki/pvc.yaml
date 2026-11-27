@@ -1,0 +1,15 @@
+# Alles Veraenderliche: das Git-Repository mit den Seiten, die SQLite-Datei
+# mit den Benutzern und settings.cfg (enthaelt den beim ersten Start
+# erzeugten SECRET_KEY).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: otterwiki
+  namespace: otterwiki
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi

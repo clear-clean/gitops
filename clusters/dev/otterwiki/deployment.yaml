@@ -1,0 +1,91 @@
+# An Otter Wiki (https://otterwiki.com), offizielles Image in der
+# unprivilegierten slim-Variante (kein nginx, laeuft als www-data, Port 8080).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otterwiki
+  namespace: otterwiki
+  labels:
+    app.kubernetes.io/name: otterwiki
+spec:
+  # Otter Wiki kennt kein Locking: nie mehr als eine Instanz.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otterwiki
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: otterwiki
+    spec:
+      securityContext:
+        runAsUser: 33
+        runAsGroup: 33
+        fsGroup: 33
+        runAsNonRoot: true
+      initContainers:
+      # Legt Admin und Agenten-Benutzer an, falls sie fehlen. Der Entrypoint
+      # des Images bleibt aktiv und bereitet vorher Repository und
+      # settings.cfg im Volume vor.
+      - name: init-users
+        image: redimp/otterwiki:2.27.0-slim
+        args: ["sh", "/gitops/init-users.sh"]
+        envFrom:
+        - configMapRef:
+            name: otterwiki-config
+        - secretRef:
+            name: otterwiki-users
+        volumeMounts:
+        - name: data
+          mountPath: /app-data
+        - name: init
+          mountPath: /gitops
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      containers:
+      - name: otterwiki
+        image: redimp/otterwiki:2.27.0-slim
+        ports:
+        - name: http
+          containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: otterwiki-config
+        volumeMounts:
+        - name: data
+          mountPath: /app-data
+        readinessProbe:
+          httpGet:
+            path: /-/healthz
+            port: http
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /-/healthz
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: otterwiki
+      - name: init
+        configMap:
+          name: otterwiki-init

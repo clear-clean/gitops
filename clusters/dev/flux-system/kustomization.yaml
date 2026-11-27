@@ -10,3 +10,4 @@ resources:
 - dokuwiki-sync.yaml
 - cnpg-operator-sync.yaml
 - gitea-sync.yaml
+- otterwiki-sync.yaml
