@@ -1,0 +1,63 @@
+# Fuehrt bootstrap.py aus. Ein Job ist unveraenderlich; durch die Annotation
+# legt Flux ihn neu an, sobald sich das Skript oder der Schluessel aendert
+# (der Name der ConfigMap traegt einen Hash). Auf einem frischen Cluster
+# wartet das Skript, bis Gitea antwortet.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: gitea-bootstrap
+  namespace: gitea
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gitea-bootstrap
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+      - name: bootstrap
+        image: python:3.13.13-alpine3.23
+        command: ["python3", "/bootstrap/bootstrap.py"]
+        env:
+        # Admin-Zugang aus admin-secret.sops.yaml
+        - name: ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: gitea-admin
+              key: username
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gitea-admin
+              key: password
+        # AGENT_EMAIL, AGENT_PASSWORD, WEBHOOK_URL
+        envFrom:
+        - secretRef:
+            name: gitea-bootstrap
+        volumeMounts:
+        - name: bootstrap
+          mountPath: /bootstrap
+          readOnly: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: bootstrap
+        configMap:
+          name: gitea-bootstrap

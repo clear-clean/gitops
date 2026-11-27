@@ -7,3 +7,15 @@ resources:
   - ocirepository.yaml
   - helmrelease.yaml
   - httproute-redirect.yaml
+  # Objekte in Gitea selbst (Organisation, Repository, Schluessel, Schutz,
+  # Webhook, Benutzer): siehe bootstrap/bootstrap.py
+  - bootstrap-secret.sops.yaml
+  - bootstrap/job.yaml
+# Hash im Namen: aendert sich das Skript oder der Schluessel, entsteht eine
+# neue ConfigMap, und Flux legt den Job neu an.
+configMapGenerator:
+  - name: gitea-bootstrap
+    namespace: gitea
+    files:
+      - bootstrap/bootstrap.py
+      - bootstrap/wiki-deploy-key.pub
