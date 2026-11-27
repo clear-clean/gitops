@@ -11,3 +11,4 @@ resources:
 - cnpg-operator-sync.yaml
 - gitea-sync.yaml
 - otterwiki-sync.yaml
+- monitoring-sync.yaml

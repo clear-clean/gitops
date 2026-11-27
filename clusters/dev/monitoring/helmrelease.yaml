@@ -1,0 +1,91 @@
+# Metriken: Prometheus Operator, Prometheus, Alertmanager, node-exporter,
+# kube-state-metrics und Grafana. Loki und Tempo folgen in eigenen Releases.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  interval: 30m0s
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: "94.x"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    # Kubespray bindet etcd, Scheduler, Controller-Manager und kube-proxy an
+    # 127.0.0.1; ohne Anpassung im Inventory waeren diese Ziele dauerhaft "down".
+    kubeEtcd: {enabled: false}
+    kubeScheduler: {enabled: false}
+    kubeControllerManager: {enabled: false}
+    kubeProxy: {enabled: false}
+
+    prometheus:
+      prometheusSpec:
+        retention: 15d
+        retentionSize: 40GB
+        # alle ServiceMonitor/PodMonitor/Rules im Cluster einsammeln,
+        # nicht nur die mit dem Label dieses Releases
+        serviceMonitorSelectorNilUsesHelmValues: false
+        podMonitorSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
+        probeSelectorNilUsesHelmValues: false
+        resources:
+          requests: {cpu: 200m, memory: 1Gi}
+          limits: {memory: 2Gi}
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes: [ReadWriteOnce]
+              resources:
+                requests: {storage: 50Gi}
+
+    alertmanager:
+      alertmanagerSpec:
+        resources:
+          requests: {cpu: 10m, memory: 64Mi}
+          limits: {memory: 128Mi}
+        storage:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: local-path
+              accessModes: [ReadWriteOnce]
+              resources:
+                requests: {storage: 1Gi}
+
+    grafana:
+      admin:
+        existingSecret: grafana-admin
+        userKey: admin-user
+        passwordKey: admin-password
+      grafana.ini:
+        server:
+          domain: grafana.dev.cloud.clearclean.local
+          root_url: https://grafana.dev.cloud.clearclean.local/
+        users:
+          allow_sign_up: false
+        analytics:
+          reporting_enabled: false
+          check_for_updates: false
+      # Datenquellen und Dashboards kommen aus Git (Sidecar), Grafana selbst
+      # braucht deshalb kein Volume.
+      persistence:
+        enabled: false
+      # Helm-Test-Pod, laeuft nur bei "helm test"
+      testFramework:
+        enabled: false
+      resources:
+        requests: {cpu: 50m, memory: 128Mi}
+        limits: {memory: 512Mi}
