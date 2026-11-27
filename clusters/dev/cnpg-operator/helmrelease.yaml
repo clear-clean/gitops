@@ -26,6 +26,6 @@ spec:
       # Dashboard fuer PostgreSQL-Cluster als ConfigMap fuer den Grafana-Sidecar.
       # Die Scrape-Ziele liegen in clusters/dev/monitoring-config.
       grafanaDashboard:
+        # Das Label grafana_dashboard=1 setzt das Chart selbst (sidecarLabel);
+        # ein zusaetzliches labels.grafana_dashboard ergibt einen doppelten Key.
         create: true
-        labels:
-          grafana_dashboard: "1"
