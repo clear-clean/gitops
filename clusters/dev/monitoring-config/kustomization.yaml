@@ -5,6 +5,7 @@ resources:
 # Dashboards als ConfigMaps; der Grafana-Sidecar laedt alle ConfigMaps mit
 # dem Label grafana_dashboard=1 aus allen Namespaces.
 # Quellen: flux-*.json aus fluxcd/flux2-monitoring-example (Commit 7ab65dc),
+# logs.json = eigenes Dashboard (Loki),
 # traefik.json = grafana.com Dashboard 17347 Revision 9 (Traefik Labs).
 configMapGenerator:
 - name: dashboard-flux
@@ -12,6 +13,10 @@ configMapGenerator:
   files:
   - dashboards/flux-cluster.json
   - dashboards/flux-control-plane.json
+- name: dashboard-logs
+  namespace: monitoring
+  files:
+  - dashboards/logs.json
 - name: dashboard-traefik
   namespace: monitoring
   files:
