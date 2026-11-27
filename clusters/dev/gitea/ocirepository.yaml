@@ -1,0 +1,14 @@
+# Offizielles Gitea-Helm-Chart (https://gitea.com/gitea/helm-gitea), als OCI-Artefakt.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: gitea
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  url: oci://docker.gitea.com/charts/gitea
+  ref:
+    semver: "12.x"
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

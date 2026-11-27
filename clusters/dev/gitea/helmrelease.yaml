@@ -1,0 +1,115 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gitea
+  namespace: gitea
+spec:
+  interval: 30m0s
+  chartRef:
+    kind: OCIRepository
+    name: gitea
+    namespace: flux-system
+  # Gitea startet erst, wenn die Datenbank da ist (Secret gitea-db-app).
+  # Beim ersten Ausrollen kann das einen Anlauf laenger dauern.
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # RWO-Volume auf einem Node: alten Pod erst beenden, dann neuen starten.
+    strategy:
+      type: Recreate
+
+    # Die Datenbank kommt von CloudNativePG (database.yaml). Die im Chart
+    # eingebauten Bitnami-Subcharts bleiben aus.
+    postgresql-ha:
+      enabled: false
+    postgresql:
+      enabled: false
+    valkey-cluster:
+      enabled: false
+    valkey:
+      enabled: false
+
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: local-path
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
+
+    # Helm-Test-Hook (busybox:latest) nicht anlegen
+    test:
+      enabled: false
+
+    gitea:
+      admin:
+        # Benutzername und Passwort aus admin-secret.sops.yaml.
+        existingSecret: gitea-admin
+        email: gitea-admin@clearclean.local
+        # Das Secret im Repo ist die Wahrheit: eine Aenderung des Passworts in
+        # der Oberflaeche wird beim naechsten Start zurueckgesetzt.
+        passwordMode: keepUpdated
+
+      config:
+        server:
+          DOMAIN: gitea.dev.cloud.clearclean.local
+          ROOT_URL: https://gitea.dev.cloud.clearclean.local/
+          # Git nur ueber HTTPS; kein SSH auf dev
+          DISABLE_SSH: true
+        database:
+          DB_TYPE: postgres
+          HOST: gitea-db-rw.gitea.svc.cluster.local:5432
+        service:
+          # Konten legt nur ein Administrator an
+          DISABLE_REGISTRATION: true
+        # Ohne Valkey/Redis: Einstellungen fuer den Betrieb mit einem Pod
+        session:
+          PROVIDER: db
+        cache:
+          ADAPTER: memory
+        queue:
+          TYPE: level
+        indexer:
+          ISSUE_INDEXER_TYPE: bleve
+          REPO_INDEXER_ENABLED: false
+
+      # Name, Benutzer und Passwort der Datenbank aus dem vom Operator
+      # erzeugten Secret
+      additionalConfigFromEnvs:
+        - name: GITEA__DATABASE__NAME
+          valueFrom:
+            secretKeyRef:
+              name: gitea-db-app
+              key: dbname
+        - name: GITEA__DATABASE__USER
+          valueFrom:
+            secretKeyRef:
+              name: gitea-db-app
+              key: username
+        - name: GITEA__DATABASE__PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: gitea-db-app
+              key: password
+
+    # HTTPS ueber das Wildcard-Gateway; TLS terminiert dort.
+    gatewayAPI:
+      enabled: true
+      core:
+        httpRoute:
+          enabled: true
+          tls: true
+          parentRefs:
+            - name: traefik-gateway
+              namespace: traefik
+              sectionName: websecure
+          hostnames:
+            - gitea.dev.cloud.clearclean.local
