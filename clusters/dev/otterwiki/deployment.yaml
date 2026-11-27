@@ -26,17 +26,23 @@ spec:
         fsGroup: 33
         runAsNonRoot: true
       initContainers:
-      # Legt Admin und Agenten-Benutzer an, falls sie fehlen. Der Entrypoint
-      # des Images bleibt aktiv und bereitet vorher Repository und
-      # settings.cfg im Volume vor.
-      - name: init-users
+      # Setzt die Git-Einstellungen fuer den Abgleich und legt den Admin an,
+      # falls er fehlt (init/init.sh). Der Entrypoint des Images bleibt aktiv
+      # und bereitet vorher Repository und settings.cfg im Volume vor.
+      - name: init
         image: redimp/otterwiki:2.27.0-slim
-        args: ["sh", "/gitops/init-users.sh"]
+        args: ["sh", "/gitops/init.sh"]
         envFrom:
         - configMapRef:
             name: otterwiki-config
         - secretRef:
             name: otterwiki-users
+        env:
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: otterwiki-sync
+              key: SECRET_KEY
         volumeMounts:
         - name: data
           mountPath: /app-data
@@ -57,9 +63,22 @@ spec:
         envFrom:
         - configMapRef:
             name: otterwiki-config
+        env:
+        # Fest vorgegeben statt vom Image erzeugt: aus SECRET_KEY und der
+        # Adresse des Remotes berechnet das Wiki die geheime Webhook-Adresse,
+        # die in Gitea hinterlegt ist. Sie muss einen Volume-Reset ueberstehen.
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: otterwiki-sync
+              key: SECRET_KEY
         volumeMounts:
         - name: data
           mountPath: /app-data
+        # SSH-Schluessel fuer den Abgleich mit Gitea (dort als Deploy-Key)
+        - name: sync
+          mountPath: /sync
+          readOnly: true
         readinessProbe:
           httpGet:
             path: /-/healthz
@@ -89,3 +108,10 @@ spec:
       - name: init
         configMap:
           name: otterwiki-init
+      - name: sync
+        secret:
+          secretName: otterwiki-sync
+          defaultMode: 0440
+          items:
+          - key: id_ed25519
+            path: id_ed25519

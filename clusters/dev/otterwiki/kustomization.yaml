@@ -8,6 +8,7 @@ resources:
   - service.yaml
   - httproute.yaml
   - users-secret.sops.yaml
+  - sync-secret.sops.yaml
 # Die ConfigMaps bekommen einen Hash im Namen. Aendert sich eine der Dateien,
 # startet das Deployment den Pod neu.
 configMapGenerator:
@@ -17,4 +18,4 @@ configMapGenerator:
       - config.env
   - name: otterwiki-init
     files:
-      - init/init-users.sh
+      - init/init.sh
