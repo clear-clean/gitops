@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- podmonitors.yaml
+# Dashboards als ConfigMaps; der Grafana-Sidecar laedt alle ConfigMaps mit
+# dem Label grafana_dashboard=1 aus allen Namespaces.
+# Quellen: flux-*.json aus fluxcd/flux2-monitoring-example (Commit 7ab65dc),
+# traefik.json = grafana.com Dashboard 17347 Revision 9 (Traefik Labs).
+configMapGenerator:
+- name: dashboard-flux
+  namespace: monitoring
+  files:
+  - dashboards/flux-cluster.json
+  - dashboards/flux-control-plane.json
+- name: dashboard-traefik
+  namespace: monitoring
+  files:
+  - dashboards/traefik.json
+generatorOptions:
+  labels:
+    grafana_dashboard: "1"

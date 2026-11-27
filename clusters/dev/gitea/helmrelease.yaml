@@ -58,6 +58,12 @@ spec:
         # der Oberflaeche wird beim naechsten Start zurueckgesetzt.
         passwordMode: keepUpdated
 
+      # /metrics einschalten. Das Token steht nicht in den Values (Klartext
+      # im Repo), sondern kommt per Env aus metrics-secret.sops.yaml; den
+      # PodMonitor dazu gibt es in clusters/dev/monitoring-config.
+      metrics:
+        enabled: true
+
       config:
         server:
           DOMAIN: gitea.dev.cloud.clearclean.local
@@ -116,6 +122,11 @@ spec:
             secretKeyRef:
               name: gitea-db-app
               key: password
+        - name: GITEA__METRICS__TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitea-metrics
+              key: token
 
     # HTTPS ueber das Wildcard-Gateway; TLS terminiert dort.
     gatewayAPI:

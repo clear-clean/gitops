@@ -23,6 +23,10 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+  valuesFrom:
+  - kind: ConfigMap
+    name: kube-prometheus-stack-values
+    valuesKey: kube-state-metrics-flux.yaml
   values:
     # Kubespray bindet etcd, Scheduler, Controller-Manager und kube-proxy an
     # 127.0.0.1; ohne Anpassung im Inventory waeren diese Ziele dauerhaft "down".

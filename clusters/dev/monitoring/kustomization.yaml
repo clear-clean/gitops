@@ -6,3 +6,14 @@ resources:
 - grafana-admin-secret.sops.yaml
 - helmrelease.yaml
 - httproute.yaml
+# Lange Values-Bloecke liegen in eigenen Dateien und werden per valuesFrom
+# eingebunden. Das Label laesst helm-controller Aenderungen sofort uebernehmen.
+configMapGenerator:
+- name: kube-prometheus-stack-values
+  namespace: monitoring
+  files:
+  - values/kube-state-metrics-flux.yaml
+  options:
+    disableNameSuffixHash: true
+    labels:
+      reconcile.fluxcd.io/watch: Enabled

@@ -21,3 +21,11 @@ spec:
     crds: CreateReplace
   upgrade:
     crds: CreateReplace
+  values:
+    monitoring:
+      # Dashboard fuer PostgreSQL-Cluster als ConfigMap fuer den Grafana-Sidecar.
+      # Die Scrape-Ziele liegen in clusters/dev/monitoring-config.
+      grafanaDashboard:
+        create: true
+        labels:
+          grafana_dashboard: "1"

@@ -12,3 +12,4 @@ resources:
 - gitea-sync.yaml
 - otterwiki-sync.yaml
 - monitoring-sync.yaml
+- monitoring-config-sync.yaml

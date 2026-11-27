@@ -4,6 +4,7 @@ resources:
   - namespace.yaml
   - database.yaml
   - admin-secret.sops.yaml
+  - metrics-secret.sops.yaml
   - ocirepository.yaml
   - helmrelease.yaml
   - httproute-redirect.yaml
