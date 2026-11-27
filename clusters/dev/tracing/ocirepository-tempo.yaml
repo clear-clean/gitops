@@ -1,0 +1,15 @@
+# Wie bei Loki pflegt die Community das OSS-Chart von Tempo
+# (Single-Binary-Modus).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: tempo
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  url: oci://ghcr.io/grafana-community/helm-charts/tempo
+  ref:
+    semver: "3.x"
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

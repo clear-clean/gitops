@@ -1,0 +1,53 @@
+# Tempo als ein Pod mit lokalem Dateisystem. Nimmt Traces per OTLP vom
+# OpenTelemetry Collector an (clusters/dev/logging) und erzeugt daraus
+# Metriken (Service-Graph, Span-Metriken) fuer Prometheus.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tempo
+  namespace: monitoring
+spec:
+  interval: 30m0s
+  chartRef:
+    kind: OCIRepository
+    name: tempo
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    tempo:
+      reportingEnabled: false
+      # 7 Tage, wie bei den Logs
+      retention: 168h
+      # Empfaenger: Chart-Standard (OTLP und Jaeger, nur cluster-intern ueber
+      # den ClusterIP-Service). Jaeger laesst sich im Chart nicht abschalten,
+      # ohne dass die Templates scheitern; genutzt wird nur OTLP.
+      metricsGenerator:
+        enabled: true
+        remoteWriteUrl: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write
+        # WAL des Generators auf dem Volume statt in /tmp
+        storage:
+          path: /var/tempo/generator
+      overrides:
+        defaults:
+          metrics_generator:
+            processors: [service-graphs, span-metrics]
+      resources:
+        requests: {cpu: 50m, memory: 256Mi}
+        limits: {memory: 1Gi}
+
+    persistence:
+      enabled: true
+      storageClassName: local-path
+      size: 10Gi
+
+    # Jaeger-Oberflaeche nicht noetig, Traces liest Grafana
+    tempoQuery:
+      enabled: false
+
+    serviceMonitor:
+      enabled: true

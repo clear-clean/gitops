@@ -39,6 +39,9 @@ spec:
       prometheusSpec:
         retention: 15d
         retentionSize: 40GB
+        # Tempo schreibt Service-Graph- und Span-Metriken per Remote Write
+        # (nur cluster-intern, Prometheus ist nicht von aussen erreichbar).
+        enableRemoteWriteReceiver: true
         # alle ServiceMonitor/PodMonitor/Rules im Cluster einsammeln,
         # nicht nur die mit dem Label dieses Releases
         serviceMonitorSelectorNilUsesHelmValues: false
@@ -101,6 +104,32 @@ spec:
           # hier nur lokal und beantwortet die Ruler-Abfragen mit 400.
           # Log-Alarme gehen weiterhin als Grafana-Alarme.
           manageAlerts: false
+      # Tempo fuer Traces (clusters/dev/tracing), verknuepft mit Loki und
+      # Prometheus
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        access: proxy
+        url: http://tempo.monitoring.svc.cluster.local:3200
+        jsonData:
+          # vom Trace zu den Logs desselben Pods, +/- 5 Minuten
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: -5m
+            spanEndTimeShift: 5m
+            filterByTraceID: false
+            tags:
+            - key: k8s.namespace.name
+              value: k8s_namespace_name
+            - key: k8s.pod.name
+              value: k8s_pod_name
+          # Service-Graph aus den Metriken des Tempo-Generators
+          serviceMap:
+            datasourceUid: prometheus
+          nodeGraph:
+            enabled: true
+          search:
+            hide: false
       # Helm-Test-Pod, laeuft nur bei "helm test"
       testFramework:
         enabled: false

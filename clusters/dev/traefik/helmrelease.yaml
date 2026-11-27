@@ -41,6 +41,18 @@ spec:
           ip: 192.168.1.92
           service:
             enabled: false
+    # Traces jeder Anfrage per OTLP an den OpenTelemetry Collector
+    # (clusters/dev/logging), von dort an Tempo. Fehlt der Collector, gehen
+    # nur die Traces verloren; das Routing laeuft unabhaengig davon.
+    tracing:
+      serviceName: traefik
+      sampleRate: 1.0
+      otlp:
+        enabled: true
+        http:
+          enabled: true
+          endpoint: http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4318/v1/traces
+
     gateway:
       listeners:
         web:

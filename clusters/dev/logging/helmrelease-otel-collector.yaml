@@ -1,6 +1,7 @@
 # OpenTelemetry Collector als DaemonSet: liest die Container-Logs des Nodes
 # (/var/log/pods), ergaenzt Kubernetes-Metadaten und schickt sie per OTLP
-# an Loki. Spaeter nimmt er auch Traces an (Schritt 4).
+# an Loki. Ausserdem nimmt er Traces per OTLP an (z. B. von Traefik) und
+# reicht sie an Tempo weiter (clusters/dev/tracing).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -49,10 +50,29 @@ spec:
       capabilities:
         drop: [ALL]
 
-    # Eigene Metriken des Collectors (Port 8888) in Prometheus
+    # OTLP nur cluster-intern ueber den Service, keine Host-Ports: sonst
+    # koennte jeder im LAN ueber 192.168.1.92:4317/4318 Daten einspielen.
+    # Jaeger und Zipkin werden nicht gebraucht.
     ports:
+      otlp:
+        hostPort: 0
+      otlp-http:
+        hostPort: 0
+      jaeger-compact:
+        enabled: false
+      jaeger-thrift:
+        enabled: false
+      jaeger-grpc:
+        enabled: false
+      zipkin:
+        enabled: false
+      # Eigene Metriken des Collectors (Port 8888) in Prometheus
       metrics:
         enabled: true
+    # Im DaemonSet-Modus nur auf Wunsch; internalTrafficPolicy Local,
+    # d. h. jeder Pod spricht mit dem Collector auf seinem eigenen Node.
+    service:
+      enabled: true
     podMonitor:
       enabled: true
 
@@ -64,8 +84,10 @@ spec:
       exporters:
         otlp_http/loki:
           endpoint: http://loki.monitoring.svc.cluster.local:3100/otlp
+        otlp_http/tempo:
+          endpoint: http://tempo.monitoring.svc.cluster.local:4318
       receivers:
-        # nur, was gebraucht wird; OTLP bleibt fuer Schritt 4
+        # nur, was gebraucht wird: file_log (Preset) und OTLP
         jaeger: null
         zipkin: null
         prometheus: null
@@ -74,4 +96,7 @@ spec:
           logs:
             exporters: [otlp_http/loki]
           metrics: null
-          traces: null
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, k8s_attributes, batch]
+            exporters: [otlp_http/tempo]
