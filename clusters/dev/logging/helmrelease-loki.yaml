@@ -1,0 +1,88 @@
+# Loki im Monolithic-Modus (ein Pod) mit Dateisystem als Speicher:
+# genug fuer einen Single-Node-Cluster, ohne Objektspeicher.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: monitoring
+spec:
+  interval: 30m0s
+  chartRef:
+    kind: OCIRepository
+    name: loki
+    namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    deploymentMode: Monolithic
+
+    loki:
+      # ein Mandant, keine X-Scope-OrgID noetig
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: filesystem
+      schemaConfig:
+        configs:
+        - from: "2026-11-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+      limits_config:
+        # 7 Tage Aufbewahrung, umgesetzt vom Compactor
+        retention_period: 168h
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
+        volume_enabled: true
+      compactor:
+        retention_enabled: true
+        delete_request_store: filesystem
+      analytics:
+        reporting_enabled: false
+
+    singleBinary:
+      replicas: 1
+      persistence:
+        enabled: true
+        size: 20Gi
+        storageClass: local-path
+      resources:
+        requests: {cpu: 100m, memory: 256Mi}
+        limits: {memory: 1Gi}
+
+    # Die Ziele des SimpleScalable-Modus stehen im Chart auf 3 Replikas.
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+    backend:
+      replicas: 0
+
+    # Fuer einen Pod unnoetig: nginx-Gateway, memcached-Caches, Canary, Helm-Test
+    gateway:
+      enabled: false
+    resultsCache:
+      enabled: false
+    chunksCache:
+      enabled: false
+    lokiCanary:
+      enabled: false
+    test:
+      enabled: false
+    # Alarmregeln fuer Loki kommen spaeter, solange kein Sidecar dafuer
+    sidecar:
+      rules:
+        enabled: false
+
+    # Eigene Metriken von Loki in Prometheus
+    monitoring:
+      serviceMonitor:
+        enabled: true

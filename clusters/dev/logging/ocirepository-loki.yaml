@@ -1,0 +1,15 @@
+# Seit Maerz 2026 pflegt die Community das OSS-Chart von Loki; das alte
+# grafana/loki ist nur noch fuer Grafana Enterprise Logs gedacht.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: loki
+  namespace: flux-system
+spec:
+  interval: 1h0m0s
+  url: oci://ghcr.io/grafana-community/helm-charts/loki
+  ref:
+    semver: "21.x"
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

@@ -13,3 +13,4 @@ resources:
 - otterwiki-sync.yaml
 - monitoring-sync.yaml
 - monitoring-config-sync.yaml
+- logging-sync.yaml

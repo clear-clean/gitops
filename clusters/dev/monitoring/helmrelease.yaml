@@ -87,6 +87,16 @@ spec:
       # braucht deshalb kein Volume.
       persistence:
         enabled: false
+      # Loki fuer Logs (clusters/dev/logging); die Prometheus-Datenquelle
+      # legt das Chart selbst an.
+      additionalDataSources:
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: http://loki.monitoring.svc.cluster.local:3100
+        jsonData:
+          maxLines: 1000
       # Helm-Test-Pod, laeuft nur bei "helm test"
       testFramework:
         enabled: false
